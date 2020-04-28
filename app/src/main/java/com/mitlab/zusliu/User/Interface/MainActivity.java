@@ -77,6 +77,9 @@ public class MainActivity extends Activity implements iBeaconScanManager.OniBeac
     static int [] mark_position_X = {600,560,600,600,530,260,480,380,380,280,480};
     static int [] mark_position_Y = {30 ,110,180,285,420,400,480,420,320,320,300};
     static int [] beacon_num      = {  5, 81, 30, 41, 42, 43,  6, 82, 91, 92, 93};
+    static int choose_one = 0;    //只讓一個點顯示
+    static int pre_beacon = 0;
+    static int beacon_in  = 0;
     /*
     static int [][] beacon_to_mark ={
         {},
@@ -122,13 +125,14 @@ public class MainActivity extends Activity implements iBeaconScanManager.OniBeac
     }
 ///////////////////////////////////////////////////////////////////////////////////測試
     public int correspod_beacon(int major,int minor){
-        int beacon_in = major*10 + minor;
+        beacon_in = major*10 + minor;
         int num;
         for(num=0; num<=10; num++)
         {
             if( beacon_in == beacon_num[num]) break;
             else {}
         }
+
         return num;
     }
 
@@ -188,10 +192,27 @@ public class MainActivity extends Activity implements iBeaconScanManager.OniBeac
 
     public void beacon_state(int major,int minor,int rssi){
         if(-rssi < 60){
-            change_mark(correspod_beacon(major,minor),1);
-        }else{
-            change_mark(correspod_beacon(major,minor),0);
+            if(choose_one ==1){
+                /*if(pre_beacon != beacon_in) {
+                    change_mark(correspod_beacon(pre_beacon / 10, pre_beacon % 10), 0);
+                }
+                change_mark(correspod_beacon(major, minor), 1);
+                pre_beacon = beacon_in;*/
+            }
+            else {
+                choose_one = 1;
+                change_mark(correspod_beacon(major, minor), 1);
+                pre_beacon = beacon_in;
+            }
         }
+        else{
+            if(choose_one == 1){
+                choose_one = 0;
+                change_mark(correspod_beacon(major,minor),0);
+            }
+            else{}
+        }
+
     }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -245,9 +266,9 @@ public class MainActivity extends Activity implements iBeaconScanManager.OniBeac
 
             if ((System.currentTimeMillis() - beacon.lastUpdate) > Setup.TIME_BEACON_TIMEOUT) {
                 // Step.02(更新裝置背景執行流程) 移除清單
-                change_mark(beacon.major,0);
+                change_mark(correspod_beacon(beacon.major,beacon.minor),0);
+                choose_one = 0;
                 this.beacons.remove(i);
-
             }
         }
 
